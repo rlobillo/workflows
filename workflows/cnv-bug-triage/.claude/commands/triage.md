@@ -8,15 +8,16 @@ and generates suggestions for each gap. Produces a triage report artifact summar
 ## Prerequisites
 
 - Jira MCP server must be configured and accessible
-- User should have confirmed the target Jira project (default: CNV)
+- User should have confirmed the target component (default: "CNV Install, Upgrade and Operators")
 
 ## Process
 
 1. **Fetch untriaged bugs**
-   - Query Jira with the default JQL for untriaged CNV bugs:
+   - Query Jira with the default JQL for untriaged CNV issues:
      ```
-     project = CNV AND issuetype = Bug AND status not in (Closed, Resolved, "Won't Fix") AND (priority = Undefined OR assignee is EMPTY OR fixVersion is EMPTY)
+     project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND (assignee is EMPTY OR "QA Contact" is EMPTY OR sprint not in (openSprints(), futureSprints()) OR priority = Undefined OR fixVersion is EMPTY OR assignee = 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 OR "QA Contact" = 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9) ORDER BY createdDate ASC
      ```
+   - The account ID `712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9` is a placeholder user that counts as unassigned
    - Report total count found to the user before proceeding
    - If count is large (>50), ask user if they want to limit scope
 
@@ -61,10 +62,10 @@ Run full triage sweep:
 /triage
 ```
 
-Triage with custom JQL:
+Triage a different component:
 
 ```
-/triage project = CNV AND component = "Network" AND priority = Undefined
+/triage component = "Network"
 ```
 
 ## Success Criteria

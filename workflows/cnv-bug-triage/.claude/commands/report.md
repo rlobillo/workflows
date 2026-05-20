@@ -13,11 +13,14 @@ field-gap breakdown, backport candidates, and duplicate candidates.
 ## Process
 
 1. **Fetch current bug state from Jira**
-   - Total open CNV bugs
-   - Untriaged bug count (missing any of the 5 fields)
-   - Bugs per triage field gap (how many are missing assignee? priority? etc.)
-   - Bugs by priority distribution
-   - Bugs by component
+   - Use the standard triage JQL to get the untriaged count:
+     ```
+     project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND (assignee is EMPTY OR "QA Contact" is EMPTY OR sprint not in (openSprints(), futureSprints()) OR priority = Undefined OR fixVersion is EMPTY OR assignee = 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 OR "QA Contact" = 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9) ORDER BY createdDate ASC
+     ```
+   - Total open issues in the component
+   - Untriaged count per missing field (assignee, QA Contact, sprint, priority, fixVersion)
+   - Issues by priority distribution
+   - Issues by type (Bug / Vulnerability / Weakness)
 
 2. **Load existing artifacts (if available)**
    - Read `artifacts/cnv-bug-triage/triage-report.md` for pending suggestions
