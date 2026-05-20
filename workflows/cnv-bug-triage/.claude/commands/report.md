@@ -32,7 +32,7 @@ field-gap breakdown, backport candidates, and duplicate candidates.
    - **Executive Summary**: high-level health of the triage queue
    - **Triage Completeness**: table of counts by missing field
    - **Priority Distribution**: breakdown of open bugs by priority
-   - **Top Untriaged Bugs**: the 10 most critical untriaged bugs needing immediate attention
+   - **Top Untriaged Bugs**: the 10 most critical untriaged bugs needing immediate attention, each key formatted as a clickable link: `[CNV-XXXXX](https://atlassian.redhat.net/browse/CNV-XXXXX)`
    - **Backport Status**: count of bugs needing backport (if backport analysis was run)
    - **Duplicate Status**: count of duplicate candidates (if duplicate check was run)
    - **Comment Coverage**: how many bugs have received a [Bug Triage Agent] comment

@@ -46,7 +46,8 @@ and generates suggestions for each gap. Produces a triage report artifact summar
    - Save to `artifacts/cnv-bug-triage/triage-report.md`
 
 5. **Present summary in conversation**
-   - Show a brief table: bug key | missing fields | top suggestion
+   - Show a brief table: bug key (as clickable link) | missing fields | top suggestion
+   - Format every issue key as a Markdown link: `[CNV-XXXXX](https://atlassian.redhat.net/browse/CNV-XXXXX)`
    - Invite user to run `/post-comments` to post suggestions to Jira
 
 ## Output
