@@ -20,18 +20,17 @@ A bug is considered FULLY TRIAGED when ALL five of these fields are populated:
 
 | Command | Description |
 |---------|-------------|
-| `/triage` | Fetch and analyze all untriaged CNV bugs; generate triage report |
+| `/report` | Full dashboard: untriaged (with apply), current sprint, future sprint — with PR status and activity |
 | `/triage-bug [KEY]` | Deep-dive analysis of a single bug (fields + backport + duplicates) |
 | `/post-comments` | Post structured triage suggestions as Jira comments |
 | `/duplicate-check` | Identify potential duplicate bugs among open issues |
 | `/backport-analysis` | Analyze resolved bugs for backport needs across releases |
-| `/report` | Full dashboard: untriaged (with apply), current sprint, future sprint — with PR status and activity |
 
 ## Typical Workflow
 
 ```text
-# 1. Start with a full sweep
-/triage
+# 1. Generate full triage dashboard
+/report
 
 # 2. Deep-dive on a specific bug
 /triage-bug CNV-12345
@@ -44,9 +43,6 @@ A bug is considered FULLY TRIAGED when ALL five of these fields are populated:
 
 # 5. Post suggestions to Jira (requires confirmation)
 /post-comments
-
-# 6. Generate a status report
-/report
 ```
 
 ## Output Artifacts
@@ -55,11 +51,10 @@ All outputs are saved in `artifacts/cnv-bug-triage/`:
 
 ```text
 artifacts/cnv-bug-triage/
-├── triage-report.md      # Full list of untriaged bugs with suggestions
+├── full-report.md        # 3-table triage dashboard (untriaged, current sprint, future sprint)
 ├── bug-{KEY}.md          # Individual bug deep-dive analysis
 ├── duplicates-report.md  # Potential duplicate pairs with confidence scores
-├── backport-report.md    # Resolved bugs needing backport evaluation
-└── full-report.md        # Comprehensive triage status dashboard
+└── backport-report.md    # Resolved bugs needing backport evaluation
 ```
 
 ## Jira Comment Format
