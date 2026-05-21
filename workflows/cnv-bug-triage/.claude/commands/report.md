@@ -15,7 +15,7 @@ to keep tables compact.
 Show this legend at the top of every report:
 
 ```
-Priority: 🔴 Critical  🟠 Blocker  🟡 Major  🔵 Normal  ⚪ Minor
+Priority: 🔴 Blocker  🟠 Critical  🟡 Major  🟣 Normal  🔵 Minor  ⚪ Undefined
 Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
 ```
 
@@ -47,8 +47,11 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
 
    For every issue across all three queries, gather:
 
-   - **Customer flag**: check if the reporter is external (non-Red Hat), or if the issue
-     has a "customer"/"CEE"/"support-case" label, or was created via a support case link.
+   - **Customer flag**: run a separate JQL query to identify customer-reported bugs:
+     ```
+     project = CNV AND type = Bug AND SFDC_Cases_Counter > 0 AND resolution is EMPTY AND component = "CNV Install, Upgrade and Operators"
+     ```
+     Cross-reference returned keys with the issues in each table. Mark matches with 👤.
    - **Recent activity (last 7 days)**: scan comments, status transitions, and field changes.
      **Ignore all bot-generated activity** (CI bots, auto-labelers, merge bots).
      Only report human actions. For field updates, mention what changed
