@@ -57,8 +57,11 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
      specific comment, transition, or changelog in Jira. Use the format:
      `[description](https://redhat.atlassian.net/browse/CNV-XXXXX?focusedId=COMMENT_ID)`
      for comments, or link to the issue activity tab for other changes.
-   - **Linked PRs**: use `getJiraIssueRemoteIssueLinks` or `getTeamworkGraphContext` to find
-     GitHub pull requests. For each PR report:
+   - **Linked PRs**: **always check BOTH sources** and merge results (deduplicate by URL):
+     1. `getTeamworkGraphContext` with `detailLevel: "full"` and
+        `relationshipTypes: ["jira-work-item-links-external-pull-request"]`
+     2. `getJiraIssueRemoteIssueLinks` filtering for GitHub/GitLab PR URLs
+     For each PR report:
      - PR URL (as clickable link)
      - Status: Open / Merged / Closed / Draft
      - Recent human activity only (reviews, comments, commits — ignore bot CI activity)
