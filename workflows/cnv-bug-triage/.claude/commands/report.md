@@ -2,13 +2,22 @@
 
 ## Purpose
 
-Produces a full triage dashboard with three distinct tables covering untriaged issues,
-current-sprint work, and future-sprint work. Includes field suggestions, customer flags,
-recent activity summaries, and linked PR status.
+Produces a full triage dashboard with three tables covering untriaged issues,
+current-sprint work, and future-sprint work. Uses emoji icons instead of extra columns
+to keep tables compact.
 
 ## Prerequisites
 
 - Jira MCP server must be configured and accessible
+
+## Emoji Legend
+
+Show this legend at the top of every report:
+
+```
+Priority: 🔴 Critical  🟠 Blocker  🟡 Major  🔵 Normal  ⚪ Minor
+Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
+```
 
 ## Process
 
@@ -34,78 +43,77 @@ recent activity summaries, and linked PR status.
    project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in futureSprints() AND sprint not in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY priority ASC
    ```
 
-2. **Enrich each issue with extra context**
+2. **Enrich each issue**
 
    For every issue across all three queries, gather:
 
-   - **Customer flag**: check if the reporter is external (non-Red Hat) or if the issue
-     has a "customer" label/flag or was created via a support case link. Mark as "Customer: Yes/No".
+   - **Customer flag**: check if the reporter is external (non-Red Hat), or if the issue
+     has a "customer"/"CEE"/"support-case" label, or was created via a support case link.
    - **Recent activity (last 7 days)**: scan comments, status transitions, and field changes.
-     Summarize the type of activity (e.g., "comment by dev", "status changed to ON_QE",
-     "fix version updated", "no activity").
+     **Ignore all bot-generated activity** (CI bots, auto-labelers, merge bots).
+     Only report human actions. For field updates, mention what changed
+     (e.g., "Priority: Major → Critical"). If no human activity in 7+ days, mark as stale.
+   - **Link activity to Jira**: every activity entry should be a clickable link to the
+     specific comment, transition, or changelog in Jira. Use the format:
+     `[description](https://redhat.atlassian.net/browse/CNV-XXXXX?focusedId=COMMENT_ID)`
+     for comments, or link to the issue activity tab for other changes.
    - **Linked PRs**: use `getJiraIssueRemoteIssueLinks` or `getTeamworkGraphContext` to find
-     GitHub pull requests linked to the issue. For each PR report:
+     GitHub pull requests. For each PR report:
      - PR URL (as clickable link)
-     - Status: Open / Merged / Closed
-     - Recent human activity: yes/no and brief description (ignore bot-only activity like
-       CI checks, auto-labels). Focus on human reviews, comments, and commits.
+     - Status: Open / Merged / Closed / Draft
+     - Recent human activity only (reviews, comments, commits — ignore bot CI activity)
 
 3. **Build Table 1 — Untriaged Issues**
 
-   Columns:
-
-   | Issue | Summary | Missing Fields | Suggestions | Apply? |
-   |-------|---------|----------------|-------------|--------|
+   | Issue | Summary | Missing Fields | Suggestions |
+   |-------|---------|----------------|-------------|
 
    - **Issue**: clickable link `[CNV-XXXXX](https://redhat.atlassian.net/browse/CNV-XXXXX)`
-   - **Summary**: issue title (truncated if long)
-   - **Missing Fields**: comma-separated list (e.g., "Assignee, Sprint, Priority")
+   - **Summary**: prepend emoji icons before the title:
+     - Priority icon (🔴🟠🟡🔵⚪) — always first
+     - 👤 if customer-reported
+     - ⚠️ if stale (no human activity in 7+ days)
+     - Then the issue title (truncated if long)
+     - Example: `🟡 👤 ⚠️ OVN network policy not enforced after upgrade`
+   - **Missing Fields**: comma-separated list (e.g., "Assignee, Sprint")
    - **Suggestions**: proposed values with brief reasoning for each missing field
-   - **Apply?**: after presenting the table, ask the user if they want to apply any or all
-     suggestions. If confirmed, use Jira MCP tools (`editJiraIssue`) to set the fields.
-     Process one issue at a time, confirming before each update.
 
 4. **Build Table 2 — Triaged, Current Sprint (pending resolution)**
 
-   Columns:
-
-   | Issue | Summary | Priority | Customer? | Activity (7d) | PRs | PR Activity |
-   |-------|---------|----------|-----------|---------------|-----|-------------|
+   | Issue | Summary | Activity (7d) | PRs |
+   |-------|---------|---------------|-----|
 
    - **Issue**: clickable link
-   - **Summary**: issue title
-   - **Priority**: current priority value
-   - **Customer?**: Yes/No
-   - **Activity (7d)**: brief description of any activity in the last 7 days, or "None"
-   - **PRs**: linked PR URLs (clickable) with status (Open/Merged/Closed), or "None"
-   - **PR Activity**: recent human activity on linked PRs, or "None"
+   - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + title)
+   - **Activity (7d)**: brief description of human activity, linked to Jira.
+     For field updates, mention the change. "None" if no human activity.
+   - **PRs**: linked PR URLs (clickable) with status and recent human activity,
+     or "None"
 
 5. **Build Table 3 — Triaged, Future Sprint (pending resolution)**
 
    Same columns as Table 2:
 
-   | Issue | Summary | Priority | Customer? | Activity (7d) | PRs | PR Activity |
-   |-------|---------|----------|-----------|---------------|-----|-------------|
+   | Issue | Summary | Activity (7d) | PRs |
+   |-------|---------|---------------|-----|
 
 6. **Executive summary**
 
    Above the tables, show a brief summary:
    - Total issues in scope
-   - Untriaged count
-   - Current sprint count (and how many are customer-reported)
-   - Future sprint count (and how many are customer-reported)
-   - Issues with no activity in the last 7 days (stale count)
-   - Issues with open PRs awaiting review
+   - Untriaged count (👤 X customer-reported)
+   - Current sprint count (👤 X customer-reported, ⚠️ X stale)
+   - Future sprint count (👤 X customer-reported, ⚠️ X stale)
+   - Issues with open PRs awaiting human review
 
 7. **Save and present**
    - Save the full report to `artifacts/cnv-bug-triage/full-report.md`
    - Present all three tables inline in the conversation
-   - After Table 1, ask if the user wants to apply any suggestions
 
 ## Output
 
 - **Full report**: `artifacts/cnv-bug-triage/full-report.md`
-  - Executive summary + three tables with all columns described above
+  - Emoji legend + executive summary + three tables
 
 ## Usage Examples
 
@@ -119,27 +127,18 @@ Generate the full report:
 
 After running this command:
 
-- [ ] Three separate tables generated (untriaged, current sprint, future sprint)
+- [ ] Three tables generated (untriaged, current sprint, future sprint)
 - [ ] All issue keys rendered as clickable Jira links
-- [ ] Customer flag checked for every issue
-- [ ] Last 7 days activity summarized for every issue
-- [ ] Linked PRs identified with status and human activity
-- [ ] Suggestions provided for untriaged issues with option to apply
+- [ ] Priority/customer/stale icons embedded in Summary column
+- [ ] Only human activity shown (bot activity filtered out)
+- [ ] Field changes mention what changed specifically
+- [ ] Activity entries linked to Jira for one-click access
+- [ ] Linked PRs with status and human activity
 - [ ] Report saved to `artifacts/cnv-bug-triage/full-report.md`
-
-## Next Steps
-
-After reviewing the report:
-
-1. Apply suggested triage values for untriaged issues (the agent will ask)
-2. Follow up on stale issues with no recent activity
-3. Review open PRs that need attention
-4. Re-run `/report` after making changes to track progress
 
 ## Notes
 
-- The "Apply?" column is interactive — the agent will ask before modifying any Jira field
 - PR detection relies on issues having proper remote links in Jira; unlinked PRs won't appear
-- Customer detection heuristics: reporter domain, "customer" label, support case links
-- Activity scanning looks at comments, status changes, and field updates from the last 7 days
-- Human PR activity filters out bot actions (CI, auto-merge, label bots) to surface real engagement
+- Customer detection heuristics: reporter domain, "customer"/"CEE" labels, support case links
+- Stale threshold: 7 days with no human activity (bot activity does not count)
+- All activity links point to the specific Jira comment or changelog entry
