@@ -1,11 +1,8 @@
 # CNV Bug Triage Workflow
 
-LLM-assisted Jira bug triage agent for CNV (OpenShift Virtualization) bugs. Analyzes issues,
-identifies missing triage fields, and suggests values — without ever modifying bug fields directly.
-
-## Core Principle
-
-**This workflow is read-and-suggest only. It never modifies Jira fields. It only analyzes, suggests, and optionally posts structured comments for human review.**
+LLM-assisted Jira bug triage agent for CNV (OpenShift Virtualization). Analyzes issues,
+suggests triage values, tracks sprint progress with PR status and activity, and can apply
+changes on user confirmation.
 
 ## What Makes a Bug Fully Triaged?
 
@@ -28,7 +25,7 @@ A bug is considered FULLY TRIAGED when ALL five of these fields are populated:
 | `/post-comments` | Post structured triage suggestions as Jira comments |
 | `/duplicate-check` | Identify potential duplicate bugs among open issues |
 | `/backport-analysis` | Analyze resolved bugs for backport needs across releases |
-| `/report` | Generate comprehensive triage status dashboard |
+| `/report` | Full dashboard: untriaged (with apply), current sprint, future sprint — with PR status and activity |
 
 ## Typical Workflow
 
@@ -92,14 +89,47 @@ no fields have been modified. Please review and apply as appropriate.
 
 A 7-day cooldown per bug prevents repeat comments.
 
+## Report Tables
+
+The `/report` command generates three tables:
+
+### Table 1 — Untriaged Issues
+
+| Issue | Summary | Missing Fields | Suggestions | Apply? |
+|-------|---------|----------------|-------------|--------|
+
+Shows which triage fields are missing and suggests values. After presenting the table,
+the agent asks if you want to apply any suggestions to Jira.
+
+### Table 2 — Triaged, Current Sprint
+
+| Issue | Summary | Priority | Customer? | Activity (7d) | PRs | PR Activity |
+|-------|---------|----------|-----------|---------------|-----|-------------|
+
+Issues fully triaged and assigned to the current open sprint.
+
+### Table 3 — Triaged, Future Sprint
+
+Same columns as Table 2, for issues assigned to upcoming sprints.
+
+**Column details:**
+
+- **Customer?** — detected via reporter domain, labels (`customer`, `CEE`), or linked support cases
+- **Activity (7d)** — comments, status transitions, field changes in the last 7 days
+- **PRs** — linked GitHub PRs with status (Open/Merged/Closed/Draft)
+- **PR Activity** — recent human activity on PRs (reviews, comments, commits), filtering out bot noise
+
 ## Jira MCP Integration
 
 This workflow uses the Atlassian/Jira MCP server tools:
 
 - `searchJiraIssuesUsingJql` — fetch bugs by JQL query
 - `getJiraIssue` — get full details for a specific issue
+- `editJiraIssue` — apply confirmed triage suggestions
 - `addCommentToJiraIssue` — post triage comments
 - `lookupJiraAccountId` — resolve team member identities
+- `getJiraIssueRemoteIssueLinks` — find linked GitHub PRs
+- `getTeamworkGraphContext` — discover PR relationships and activity
 
 ## Default JQL Filters
 
