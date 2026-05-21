@@ -69,7 +69,9 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
      Never write "Verify in Jira" or any other fallback text.
      For each PR found, report:
      - PR URL (as clickable link)
-     - Status: Open / Merged / Closed / Draft
+     - Status: Open / Merged / Closed / Draft — **you MUST verify the actual status**.
+       Use `WebFetch` on the PR URL to check its real state. Do NOT guess or default
+       to "Open". If you cannot determine the status, write "Unknown".
      - Recent human activity only (reviews, comments, commits — ignore bot CI activity)
 
 3. **Build Table 1 — Untriaged Issues**
@@ -90,16 +92,14 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
 4. **Build Table 2 — Triaged, Current Sprint (pending resolution)**
 
-   | Issue | Status | Summary | Next Action | Activity (21d) | PRs |
-   |-------|--------|---------|-------------|----------------|-----|
+   | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|----------|------------|----------------|-----|
 
    - **Issue**: clickable link
    - **Status**: current Jira status (e.g., NEW, ASSIGNED, POST, MODIFIED, ON_QA)
    - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + title)
-   - **Next Action**: who needs to act next, determined by this logic:
-     - NEW, ASSIGNED, or POST → show the Assignee name
-     - MODIFIED → "Waiting for fix to land"
-     - ON_QA → show the QA Contact name
+   - **Assignee**: developer assigned to the bug
+   - **QA Contact**: QE engineer assigned to validate the fix
    - **Activity (21d)**: brief description of human activity, linked to Jira.
      For field updates, mention the change. "None" if no human activity.
    - **PRs**: linked PR URLs (clickable) with status and recent human activity,
@@ -109,8 +109,8 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
    Same columns as Table 2:
 
-   | Issue | Status | Summary | Next Action | Activity (21d) | PRs |
-   |-------|--------|---------|-------------|----------------|-----|
+   | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|----------|------------|----------------|-----|
 
 6. **Consistency check**
 
