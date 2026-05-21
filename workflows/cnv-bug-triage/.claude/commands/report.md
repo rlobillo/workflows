@@ -16,7 +16,7 @@ Show this legend at the top of every report:
 
 ```
 Priority: 🔴 Blocker  🟠 Critical  🟡 Major  🟣 Normal  🔵 Minor  ⚪ Undefined
-Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
+Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 ```
 
 ## Process
@@ -52,10 +52,10 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
      project = CNV AND type = Bug AND SFDC_Cases_Counter > 0 AND resolution is EMPTY AND component = "CNV Install, Upgrade and Operators"
      ```
      Cross-reference returned keys with the issues in each table. Mark matches with 👤.
-   - **Recent activity (last 7 days)**: scan comments, status transitions, and field changes.
+   - **Recent activity (last 21 days)**: scan comments, status transitions, and field changes.
      **Ignore all bot-generated activity** (CI bots, auto-labelers, merge bots).
      Only report human actions. For field updates, mention what changed
-     (e.g., "Priority: Major → Critical"). If no human activity in 7+ days, mark as stale.
+     (e.g., "Priority: Major → Critical"). If no human activity in 21+ days, mark as stale.
    - **Link activity to Jira**: every activity entry should be a clickable link to the
      specific comment, transition, or changelog in Jira. Use the format:
      `[description](https://redhat.atlassian.net/browse/CNV-XXXXX?focusedId=COMMENT_ID)`
@@ -64,34 +64,43 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
      1. `getTeamworkGraphContext` with `detailLevel: "full"` and
         `relationshipTypes: ["jira-work-item-links-external-pull-request"]`
      2. `getJiraIssueRemoteIssueLinks` filtering for GitHub/GitLab PR URLs
-     For each PR report:
+     **You MUST call both APIs for every single issue — no shortcuts, no skipping.**
+     If neither source returns any PR URLs, the PRs cell must be exactly "None".
+     Never write "Verify in Jira" or any other fallback text.
+     For each PR found, report:
      - PR URL (as clickable link)
      - Status: Open / Merged / Closed / Draft
      - Recent human activity only (reviews, comments, commits — ignore bot CI activity)
 
 3. **Build Table 1 — Untriaged Issues**
 
-   | Issue | Summary | Missing Fields | Suggestions |
-   |-------|---------|----------------|-------------|
+   | Issue | Summary | Missing Fields | Suggestions | Triage |
+   |-------|---------|----------------|-------------|--------|
 
    - **Issue**: clickable link `[CNV-XXXXX](https://redhat.atlassian.net/browse/CNV-XXXXX)`
    - **Summary**: prepend emoji icons before the title:
      - Priority icon (🔴🟠🟡🔵⚪) — always first
      - 👤 if customer-reported
-     - ⚠️ if stale (no human activity in 7+ days)
+     - ⚠️ if stale (no human activity in 21+ days)
      - Then the issue title (truncated if long)
      - Example: `🟡 👤 ⚠️ OVN network policy not enforced after upgrade`
    - **Missing Fields**: comma-separated list (e.g., "Assignee, Sprint")
    - **Suggestions**: proposed values with brief reasoning for each missing field
+   - **Triage**: show the command to deep-dive and apply: `/triage-bug CNV-XXXXX`
 
 4. **Build Table 2 — Triaged, Current Sprint (pending resolution)**
 
-   | Issue | Summary | Activity (7d) | PRs |
-   |-------|---------|---------------|-----|
+   | Issue | Status | Summary | Next Action | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|----------------|-----|
 
    - **Issue**: clickable link
+   - **Status**: current Jira status (e.g., NEW, ASSIGNED, POST, MODIFIED, ON_QA)
    - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + title)
-   - **Activity (7d)**: brief description of human activity, linked to Jira.
+   - **Next Action**: who needs to act next, determined by this logic:
+     - NEW, ASSIGNED, or POST → show the Assignee name
+     - MODIFIED → "Waiting for fix to land"
+     - ON_QA → show the QA Contact name
+   - **Activity (21d)**: brief description of human activity, linked to Jira.
      For field updates, mention the change. "None" if no human activity.
    - **PRs**: linked PR URLs (clickable) with status and recent human activity,
      or "None"
@@ -100,19 +109,35 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 7+ days)
 
    Same columns as Table 2:
 
-   | Issue | Summary | Activity (7d) | PRs |
-   |-------|---------|---------------|-----|
+   | Issue | Status | Summary | Next Action | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|----------------|-----|
 
-6. **Executive summary**
+6. **Consistency check**
+
+   Run a baseline query to get the total number of open bugs in the component:
+
+   ```
+   project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified)
+   ```
+
+   Compare: **Total from baseline = Untriaged (Table 1) + Current Sprint (Table 2) + Future Sprint (Table 3)**
+
+   If the numbers don't match, investigate the gap:
+   - Identify the missing issues (present in baseline but absent from all 3 tables)
+   - Check their fields (sprint, assignee, priority, etc.) to understand why they fell through
+   - Report the discrepancy and the root cause in the executive summary
+
+7. **Executive summary**
 
    Above the tables, show a brief summary:
-   - Total issues in scope
+   - Total issues in scope (from baseline query)
+   - Consistency check result: whether the 3 tables cover all issues, and if not, how many are missing and why
    - Untriaged count (👤 X customer-reported)
    - Current sprint count (👤 X customer-reported, ⚠️ X stale)
    - Future sprint count (👤 X customer-reported, ⚠️ X stale)
    - Issues with open PRs awaiting human review
 
-7. **Save and present**
+8. **Save and present**
    - Save the full report to `artifacts/cnv-bug-triage/full-report.md`
    - Present all three tables inline in the conversation
 
@@ -146,5 +171,5 @@ After running this command:
 
 - PR detection relies on issues having proper remote links in Jira; unlinked PRs won't appear
 - Customer detection heuristics: reporter domain, "customer"/"CEE" labels, support case links
-- Stale threshold: 7 days with no human activity (bot activity does not count)
+- Stale threshold: 21 days with no human activity (bot activity does not count)
 - All activity links point to the specific Jira comment or changelog entry

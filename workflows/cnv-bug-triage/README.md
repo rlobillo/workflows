@@ -110,7 +110,7 @@ Same columns as Table 2, for issues assigned to upcoming sprints.
 **Column details:**
 
 - **Customer?** — detected via reporter domain, labels (`customer`, `CEE`), or linked support cases
-- **Activity (7d)** — comments, status transitions, field changes in the last 7 days
+- **Activity (7d)** — comments, status transitions, field changes in the last 21 days
 - **PRs** — linked GitHub PRs with status (Open/Merged/Closed/Draft)
 - **PR Activity** — recent human activity on PRs (reviews, comments, commits), filtering out bot noise
 
