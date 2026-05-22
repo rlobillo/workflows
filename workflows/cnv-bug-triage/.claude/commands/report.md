@@ -34,13 +34,13 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
    **Query B — Triaged, current sprint** (all 5 fields populated, in an open sprint, not resolved):
 
    ```
-   project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY priority ASC
+   project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY status ASC
    ```
 
    **Query C — Triaged, future sprint** (all 5 fields populated, in a future sprint, not resolved):
 
    ```
-   project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in futureSprints() AND sprint not in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY priority ASC
+   project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in futureSprints() AND sprint not in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY status ASC
    ```
 
 2. **Enrich each issue**
