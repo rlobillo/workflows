@@ -80,11 +80,12 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
    |-------|---------|----------------|-------------|--------|
 
    - **Issue**: clickable link `[CNV-XXXXX](https://redhat.atlassian.net/browse/CNV-XXXXX)`
-   - **Summary**: prepend emoji icons before the title:
+   - **Summary**: prepend emoji icons before the **exact Jira summary field** (do NOT
+     rephrase, shorten, or summarize — copy it verbatim from the bug's `summary` field):
      - Priority icon (🔴🟠🟡🔵⚪) — always first
      - 👤 if customer-reported
      - ⚠️ if stale (no human activity in 21+ days)
-     - Then the issue title (truncated if long)
+     - Then the **exact** issue summary from Jira (verbatim, never rewritten)
      - Example: `🟡 👤 ⚠️ OVN network policy not enforced after upgrade`
    - **Missing Fields**: comma-separated list (e.g., "Assignee, Sprint")
    - **Suggestions**: proposed values with brief reasoning for each missing field
@@ -97,7 +98,7 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
    - **Issue**: clickable link
    - **Status**: current Jira status (e.g., NEW, ASSIGNED, POST, MODIFIED, ON_QA)
-   - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + title)
+   - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + **exact** Jira summary, verbatim)
    - **Assignee**: developer assigned to the bug
    - **QA Contact**: QE engineer assigned to validate the fix
    - **Activity (21d)**: brief description of human activity, linked to Jira.
