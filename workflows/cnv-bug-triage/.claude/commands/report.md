@@ -93,6 +93,8 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
 4. **Build Table 2 — Triaged, Current Sprint (pending resolution)**
 
+   **Row order: sort by Status ascending** (match the JQL ORDER BY status ASC).
+
    | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
    |-------|--------|---------|----------|------------|----------------|-----|
 
@@ -108,7 +110,7 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
 5. **Build Table 3 — Triaged, Future Sprint (pending resolution)**
 
-   Same columns as Table 2:
+   Same columns and **same row order (by Status ascending)** as Table 2:
 
    | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
    |-------|--------|---------|----------|------------|----------------|-----|
