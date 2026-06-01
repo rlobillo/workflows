@@ -17,7 +17,7 @@ Show this legend at the top of every report:
 ```
 Priority:  🔴 Blocker  🟠 Critical  🟡 Major  🟣 Normal  🔵 Minor  ⚪ Undefined
 Flags:     👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
-Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix version released but bug still open)
+Release:   🔥 ON_QA + next z-stream GA ≤ 7 days   ❗ Bug open but fix version GA already passed
 ```
 
 ## Process
@@ -65,18 +65,23 @@ Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix 
    For each bug's Fix Version field, look up the GA date from this map and calculate
    days until GA (positive = future, negative = already passed).
 
-   **Fix Version display rules** (for Tables 2 and 3):
+   **Next Release display rules** (for the "Next Release" column in Tables 2 and 3):
 
    - **Bug is ON_QA**: the fix is already merged and will ship in the next z-stream.
      Find the **next future z-stream GA date** for that major.minor stream (the earliest
-     GA date after today). Always show `🔥`:
-     `🔥 4.21.8 (GA in 3d)`
-   - **Bug is NOT ON_QA, next z-stream GA is in the future**: show the fix version,
-     the next z-stream GA date for that major.minor, and days remaining. No urgency icon:
+     GA date after today). Show the exact z-stream and countdown:
+     `4.20.15 (GA in 3d)`
+   - **Bug is NOT ON_QA, next z-stream GA is in the future**: show the next z-stream
+     GA date for that major.minor, and days remaining:
      `4.21.8 (GA in 25d)`
    - **Bug is NOT ON_QA, fix version GA already passed**: the fix missed its target
-     release. Show `❗`:
-     `❗ 4.21.6 (GA passed)`
+     release. Show the z-stream that already shipped:
+     `4.21.6 (GA passed)`
+
+   **Summary column release icons** (prepended alongside priority/customer/stale icons):
+
+   - `🔥` if bug is ON_QA and next z-stream GA ≤ 7 days
+   - `❗` if bug is NOT ON_QA and fix version GA already passed
 
 3. **Enrich each issue**
 
@@ -130,16 +135,19 @@ Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix 
 
    **Row order: sort by Status ascending** (match the JQL ORDER BY status ASC).
 
-   | Issue | Status | Summary | Fix Version | Assignee | QA Contact | Activity (21d) | PRs |
-   |-------|--------|---------|-------------|----------|------------|----------------|-----|
+   | Issue | Status | Summary | Fix Version | Next Release | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|--------------|----------|------------|----------------|-----|
 
    - **Issue**: clickable link
    - **Status**: current Jira status (e.g., NEW, ASSIGNED, POST, MODIFIED, ON_QA)
-   - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + **exact** Jira summary, verbatim)
-   - **Fix Version**: z-stream version with release urgency (see step 2 for display rules):
-     - ON_QA → `🔥 4.21.8 (GA in 3d)`
-     - Not ON_QA, future GA → `4.21.8 (GA in 25d)`
-     - Not ON_QA, GA passed → `❗ 4.21.6 (GA passed)`
+   - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + **exact** Jira
+     summary, verbatim), plus release urgency icons when applicable:
+     - `🔥` if ON_QA and next z-stream GA ≤ 7 days
+     - `❗` if NOT ON_QA and fix version GA already passed
+     - Example: `🟡 🔥 👤 [4.20] "lowVirtControllersCount" alert firing on Two Node cluster`
+   - **Fix Version**: verbatim value from the Jira Fix Version field (e.g., "CNV v4.20.z")
+   - **Next Release**: exact z-stream version and GA countdown from Release Console API
+     (see step 2 for display rules). Examples: `4.20.15 (GA in 3d)`, `4.21.6 (GA passed)`
    - **Assignee**: developer assigned to the bug
    - **QA Contact**: QE engineer assigned to validate the fix
    - **Activity (21d)**: brief description of human activity, linked to Jira.
@@ -151,8 +159,8 @@ Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix 
 
    Same columns and **same row order (by Status ascending)** as Table 2:
 
-   | Issue | Status | Summary | Fix Version | Assignee | QA Contact | Activity (21d) | PRs |
-   |-------|--------|---------|-------------|----------|------------|----------------|-----|
+   | Issue | Status | Summary | Fix Version | Next Release | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|--------------|----------|------------|----------------|-----|
 
 6. **Consistency check**
 
@@ -222,9 +230,9 @@ After running this command:
 - [ ] Three tables generated (untriaged, current sprint, future sprint)
 - [ ] All issue keys rendered as clickable Jira links
 - [ ] Priority/customer/stale icons embedded in Summary column
-- [ ] Fix Version column in Tables 2 and 3 with z-stream GA dates from Release Console API
-- [ ] ON_QA bugs show 🔥 with next z-stream GA countdown
-- [ ] Bugs whose fix version GA already passed show ❗
+- [ ] Fix Version column shows verbatim Jira value; Next Release column shows exact z-stream + GA countdown
+- [ ] ON_QA bugs with next z-stream GA ≤ 7 days show 🔥 in Summary
+- [ ] Bugs whose fix version GA already passed show ❗ in Summary
 - [ ] Only human activity shown (bot activity filtered out)
 - [ ] Field changes mention what changed specifically
 - [ ] Activity entries linked to Jira for one-click access
