@@ -62,20 +62,27 @@ Release:   🔥 ON_QA + next z-stream GA ≤ 7 days   ❗ Bug open but fix versi
 
    Build a lookup map: `z-stream version → GA date` (e.g., `"4.21.6" → "2026-05-05"`).
 
-   For each bug's Fix Version field, look up the GA date from this map and calculate
-   days until GA (positive = future, negative = already passed).
+   For each bug's Fix Version field (e.g., "CNV v4.20.z"), extract the major.minor
+   (e.g., "4.20") and look up the milestones for that stream.
+
+   **CRITICAL**: The Jira Fix Version often contains a generic ".z" suffix (e.g.,
+   "CNV v4.20.z"). You MUST resolve this to the **exact z-stream number** from the
+   milestones API. Never show ".z" in the Next Release column — always show the
+   concrete version number (e.g., "4.20.15", not "4.20.z").
 
    **Next Release display rules** (for the "Next Release" column in Tables 2 and 3):
 
    - **Bug is ON_QA**: the fix is already merged and will ship in the next z-stream.
-     Find the **next future z-stream GA date** for that major.minor stream (the earliest
-     GA date after today). Show the exact z-stream and countdown:
+     Find the **next future z-stream GA** for that major.minor stream: the milestone
+     with `type == "ga"`, a numeric `z` field, and `date > today`, picking the one
+     with the earliest date. Show the resolved version `{major.minor}.{z}` and countdown:
      `4.20.15 (GA in 3d)`
-   - **Bug is NOT ON_QA, next z-stream GA is in the future**: show the next z-stream
-     GA date for that major.minor, and days remaining:
+   - **Bug is NOT ON_QA**: find the next future z-stream GA for that major.minor
+     (same logic as above). Show the resolved version and days remaining:
      `4.21.8 (GA in 25d)`
-   - **Bug is NOT ON_QA, fix version GA already passed**: the fix missed its target
-     release. Show the z-stream that already shipped:
+   - **Bug is NOT ON_QA, and NO future z-stream GA exists** for that major.minor
+     (all GA dates are in the past): the fix missed all target releases. Show the
+     most recent past z-stream:
      `4.21.6 (GA passed)`
 
    **Summary column release icons** (prepended alongside priority/customer/stale icons):
