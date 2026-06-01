@@ -15,8 +15,9 @@ to keep tables compact.
 Show this legend at the top of every report:
 
 ```
-Priority: 🔴 Blocker  🟠 Critical  🟡 Major  🟣 Normal  🔵 Minor  ⚪ Undefined
-Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
+Priority:  🔴 Blocker  🟠 Critical  🟡 Major  🟣 Normal  🔵 Minor  ⚪ Undefined
+Flags:     👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
+Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix version released but bug still open)
 ```
 
 ## Process
@@ -43,7 +44,41 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
    project = "OpenShift Virtualization" AND component = "CNV Install, Upgrade and Operators" AND (type = Bug OR type = Vulnerability OR type = Weakness) AND status not in (Closed, Verified) AND sprint in futureSprints() AND sprint not in openSprints() AND assignee is not EMPTY AND "QA Contact" is not EMPTY AND priority != Undefined AND fixVersion is not EMPTY AND assignee != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 AND "QA Contact" != 712020:0a621ff3-50ea-43eb-ab16-4b09475e57d9 ORDER BY status ASC
    ```
 
-2. **Enrich each issue**
+2. **Fetch release schedule**
+
+   Use `WebFetch` to call the Release Console milestones API:
+
+   ```
+   GET https://release-console.apps.cnv2.engineering.redhat.com/api/schedule/milestones
+   ```
+
+   Parse the JSON response to build a z-stream release lookup:
+
+   - Filter `operators` array for `operator == "CNV"`
+   - For each `stream`, extract `version` (major.minor, e.g., "4.21")
+   - For each `milestone` with `type == "ga"` and a numeric `z` field, build the
+     full z-stream version: `{version}.{z}` (e.g., version "4.21" + z 6 → "4.21.6")
+   - Record each z-stream's GA `date` (YYYY-MM-DD format)
+
+   Build a lookup map: `z-stream version → GA date` (e.g., `"4.21.6" → "2026-05-05"`).
+
+   For each bug's Fix Version field, look up the GA date from this map and calculate
+   days until GA (positive = future, negative = already passed).
+
+   **Fix Version display rules** (for Tables 2 and 3):
+
+   - **Bug is ON_QA**: the fix is already merged and will ship in the next z-stream.
+     Find the **next future z-stream GA date** for that major.minor stream (the earliest
+     GA date after today). Always show `🔥`:
+     `🔥 4.21.8 (GA in 3d)`
+   - **Bug is NOT ON_QA, next z-stream GA is in the future**: show the fix version,
+     the next z-stream GA date for that major.minor, and days remaining. No urgency icon:
+     `4.21.8 (GA in 25d)`
+   - **Bug is NOT ON_QA, fix version GA already passed**: the fix missed its target
+     release. Show `❗`:
+     `❗ 4.21.6 (GA passed)`
+
+3. **Enrich each issue**
 
    For every issue across all three queries, gather:
 
@@ -95,12 +130,16 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
    **Row order: sort by Status ascending** (match the JQL ORDER BY status ASC).
 
-   | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
-   |-------|--------|---------|----------|------------|----------------|-----|
+   | Issue | Status | Summary | Fix Version | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|----------|------------|----------------|-----|
 
    - **Issue**: clickable link
    - **Status**: current Jira status (e.g., NEW, ASSIGNED, POST, MODIFIED, ON_QA)
    - **Summary**: same icon-enriched format as Table 1 (priority + 👤 + ⚠️ + **exact** Jira summary, verbatim)
+   - **Fix Version**: z-stream version with release urgency (see step 2 for display rules):
+     - ON_QA → `🔥 4.21.8 (GA in 3d)`
+     - Not ON_QA, future GA → `4.21.8 (GA in 25d)`
+     - Not ON_QA, GA passed → `❗ 4.21.6 (GA passed)`
    - **Assignee**: developer assigned to the bug
    - **QA Contact**: QE engineer assigned to validate the fix
    - **Activity (21d)**: brief description of human activity, linked to Jira.
@@ -112,8 +151,8 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
 
    Same columns and **same row order (by Status ascending)** as Table 2:
 
-   | Issue | Status | Summary | Assignee | QA Contact | Activity (21d) | PRs |
-   |-------|--------|---------|----------|------------|----------------|-----|
+   | Issue | Status | Summary | Fix Version | Assignee | QA Contact | Activity (21d) | PRs |
+   |-------|--------|---------|-------------|----------|------------|----------------|-----|
 
 6. **Consistency check**
 
@@ -138,6 +177,8 @@ Flags:    👤 Customer-reported   ⚠️ Stale (no human activity in 21+ days)
    - Untriaged count (👤 X customer-reported)
    - Current sprint count (👤 X customer-reported, ⚠️ X stale)
    - Future sprint count (👤 X customer-reported, ⚠️ X stale)
+   - ❗ X bugs with fix version GA already passed (fix missed its target release)
+   - 🔥 X bugs ON_QA with next z-stream GA ≤ 7 days
    - Issues with open PRs awaiting human review
 
 8. **Save and present**
@@ -164,6 +205,9 @@ After running this command:
 - [ ] Three tables generated (untriaged, current sprint, future sprint)
 - [ ] All issue keys rendered as clickable Jira links
 - [ ] Priority/customer/stale icons embedded in Summary column
+- [ ] Fix Version column in Tables 2 and 3 with z-stream GA dates from Release Console API
+- [ ] ON_QA bugs show 🔥 with next z-stream GA countdown
+- [ ] Bugs whose fix version GA already passed show ❗
 - [ ] Only human activity shown (bot activity filtered out)
 - [ ] Field changes mention what changed specifically
 - [ ] Activity entries linked to Jira for one-click access
