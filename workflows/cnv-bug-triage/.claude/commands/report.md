@@ -181,6 +181,23 @@ Release:   🔥 GA ≤ 7 days   ⏳ GA ≤ 30 days   ❗ GA already passed (fix 
    - 🔥 X bugs ON_QA with next z-stream GA ≤ 7 days
    - Issues with open PRs awaiting human review
 
+   **Sprint progress — Dev side** (current sprint, per Assignee):
+
+   | Assignee | Total | ON_QA (done) | Pending |
+   |----------|-------|--------------|---------|
+
+   Count from Table 2: Total = all bugs assigned to this person. ON_QA (done) =
+   bugs already in ON_QA status. Pending = Total minus ON_QA.
+
+   **Sprint progress — QA side** (current sprint, per QA Contact):
+
+   | QA Contact | Total ON_QA | Verified/Closed | To verify |
+   |------------|-------------|-----------------|-----------|
+
+   Count from Table 2: Total ON_QA = bugs in ON_QA assigned to this QA Contact.
+   Verified/Closed = bugs that were ON_QA and have since moved to Verified or
+   Closed during this sprint. To verify = Total ON_QA minus Verified/Closed.
+
 8. **Save and present**
    - Save the full report to `artifacts/cnv-bug-triage/full-report.md`
    - Present all three tables inline in the conversation
