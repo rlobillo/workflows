@@ -186,6 +186,11 @@ Release:   🔥 ON_QA + next z-stream GA ≤ 7 days   ❗ Bug open but fix versi
 
 7. **Executive summary**
 
+   **IMPORTANT**: Every issue key mentioned anywhere in the executive summary
+   (including notable observations, discrepancies, and any free-text commentary)
+   MUST be a clickable Markdown link: `[CNV-XXXXX](https://redhat.atlassian.net/browse/CNV-XXXXX)`.
+   Never write a bare issue key.
+
    Above the tables, show a brief summary:
    - Total issues in scope (from baseline query)
    - Consistency check result: whether the 3 tables cover all issues, and if not, how many are missing and why
